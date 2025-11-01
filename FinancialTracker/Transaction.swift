@@ -5,24 +5,18 @@
 //  Created by Roy Dimapilis on 11/1/25.
 //
 // Import Foundation for basic data types like Date and UUID
+//
+//  Transaction.swift
+//  FinancialTracker
+//
+
 import Foundation
 
-// Define a Transaction struct to hold transaction data
-// Identifiable: Allows SwiftUI to track each transaction uniquely
-// Hashable: Required for NavigationSplitView selection tracking
+// Data model for a transaction
 struct Transaction: Identifiable, Hashable {
-    // Unique identifier for each transaction (auto-generated)
-    var id = UUID()
-    
-    // The name/description of the transaction (e.g., "Groceries")
-    var title: String
-    
-    // The dollar amount of the transaction
-    var amount: Double
-    
-    // True if this is income, false if it's an expense
-    var isIncome: Bool
-    
-    // When the transaction occurred
-    var date: Date
+    var id = UUID()  // Unique ID
+    var title: String  // Name (e.g., "Groceries")
+    var amount: Double  // Dollar amount
+    var isIncome: Bool  // True = income, False = expense
+    var date: Date  // When it happened
 }
