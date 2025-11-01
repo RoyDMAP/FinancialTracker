@@ -8,7 +8,6 @@
 import SwiftUI
 import Charts
 
-// Screen that shows a chart of your spending habits
 struct ExpenseChartView: View {
     @Environment(\.dismiss) var dismiss
     let transactions: [Transaction]
@@ -18,10 +17,10 @@ struct ExpenseChartView: View {
         // Step 1: Only get expenses (skip income)
         let expenses = transactions.filter { !$0.isIncome }
         
-        // Step 2: Group by title
+        // Group by title
         let grouped = Dictionary(grouping: expenses) { $0.title }
         
-        // Step 3: Add up the amounts for each group
+        // Add up the amounts for each group
         return grouped.map { title, transactionList in
             let total = transactionList.reduce(0) { $0 + $1.amount }
             return ExpenseData(title: title, total: total)
@@ -65,7 +64,6 @@ struct ExpenseChartView: View {
                             }
                             .padding(.top, 80)
                         } else {
-                            // We have expenses - show the chart!
                             
                             // Total expenses card
                             VStack(spacing: 12) {

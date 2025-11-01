@@ -7,11 +7,10 @@
 
 import SwiftUI
 
-// Form to edit an existing transaction
 struct EditTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
-    let transaction: Transaction  // The transaction we're editing
+    let transaction: Transaction
     
     @State private var title: String
     @State private var amount: String
@@ -42,14 +41,13 @@ struct EditTransactionView: View {
                 
                 Form {
                     Section("Transaction Details") {
-                        // Change the name
                         TextField("Title", text: $title)
-                        // Change the amount
+ 
                         TextField("Amount", text: $amount)
                             .keyboardType(.decimalPad)
-                        // Change the date
+                      
                         DatePicker("Date", selection: $date, displayedComponents: .date)
-                        // Change Income/Expense
+                       
                         Toggle("Income", isOn: $isIncome)
                     }
                     

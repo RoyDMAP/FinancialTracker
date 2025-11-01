@@ -7,15 +7,13 @@
 
 import SwiftUI
 
-// Shows the details of one transaction
 struct DetailView: View {
-    let transaction: Transaction  // The transaction to show
-    let onEdit: () -> Void  // What happens when Edit is tapped
+    let transaction: Transaction
+    let onEdit: () -> Void
     
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                // Card for transaction details
                 VStack(spacing: 20) {
                     // Big icon with circular background
                     ZStack {
@@ -36,22 +34,18 @@ struct DetailView: View {
                             .foregroundColor(transaction.isIncome ? .green : .red)
                     }
                     
-                    // Transaction title
                     Text(transaction.title)
                         .font(.title)
                         .fontWeight(.bold)
                     
-                    // Transaction amount
                     Text("$\(transaction.amount, specifier: "%.2f")")
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(transaction.isIncome ? .green : .red)
                     
-                    // Transaction date
                     Text(transaction.date, style: .date)
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    // Type badge (Income or Expense)
                     Text(transaction.isIncome ? "Income" : "Expense")
                         .font(.subheadline)
                         .fontWeight(.semibold)

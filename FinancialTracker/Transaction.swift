@@ -12,11 +12,10 @@
 
 import Foundation
 
-// Data model for a transaction
 struct Transaction: Identifiable, Hashable {
-    var id = UUID()  // Unique ID
-    var title: String  // Name (e.g., "Groceries")
-    var amount: Double  // Dollar amount
-    var isIncome: Bool  // True = income, False = expense
-    var date: Date  // When it happened
+    var id = UUID()
+    var title: String
+    var amount: Double
+    var isIncome: Bool
+    var date: Date  
 }

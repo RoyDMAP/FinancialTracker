@@ -8,19 +8,10 @@
 import SwiftUI
 
 struct ContentView: View {
-    // List of all our transactions (starts empty)
     @State private var transactions: [Transaction] = []
-    
-    // Which transaction did we tap on?
     @State private var selectedTransaction: Transaction?
-    
-    // Is the "Add Transaction" popup open?
     @State private var showingAddSheet = false
-    
-    // Is the "Edit Transaction" popup open?
     @State private var showingEditSheet = false
-    
-    // Is the "Chart" popup open?
     @State private var showingChartSheet = false
     
     // Calculate total money (income minus expenses)
@@ -44,7 +35,7 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 List(selection: $selectedTransaction) {
-                    // Balance section with card style
+                    // Balance section
                     Section {
                         HStack {
                             VStack(alignment: .leading, spacing: 8) {
