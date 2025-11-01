@@ -6,21 +6,25 @@
 
 
 import SwiftUI
+import Charts  // This lets us make charts and graphs
 
 struct ContentView: View {
-    // This holds all our transactions (starts empty now)
+    // List of all our transactions (starts empty)
     @State private var transactions: [Transaction] = []
     
-    // This remembers which transaction we clicked on
+    // Which transaction did we tap on?
     @State private var selectedTransaction: Transaction?
     
-    // This controls if the "add transaction" popup is open
+    // Is the "Add Transaction" popup open?
     @State private var showingAddSheet = false
     
-    // This controls if the "edit transaction" popup is open
+    // Is the "Edit Transaction" popup open?
     @State private var showingEditSheet = false
     
-    // This calculates how much money we have (income - expenses)
+    // NEW: Is the "Chart" popup open?
+    @State private var showingChartSheet = false
+    
+    // Calculate total money (income minus expenses)
     var balance: Double {
         transactions.reduce(0) { total, transaction in
             total + (transaction.isIncome ? transaction.amount : -transaction.amount)
@@ -28,27 +32,26 @@ struct ContentView: View {
     }
     
     var body: some View {
-        // This creates the split screen layout (sidebar + detail)
+        // Split screen: sidebar on left, detail on right
         NavigationSplitView {
-            // LEFT SIDE: List of transactions
+            // LEFT SIDE: Transaction list
             List(selection: $selectedTransaction) {
                 // Balance section
-                Section(NSLocalizedString("balance", comment: "Balance section")) {
+                Section("Balance") {
                     Text("$\(balance, specifier: "%.2f")")
                         .font(.title)
                         .foregroundColor(balance >= 0 ? .green : .red)
                 }
                 
                 // Transactions section
-                Section(NSLocalizedString("transactions", comment: "Transactions section")) {
+                Section("Transactions") {
                     if transactions.isEmpty {
-                        // Message when there are no transactions
                         Text("No transactions yet. Tap + to add one.")
                             .foregroundColor(.gray)
                             .font(.subheadline)
                             .padding()
                     } else {
-                        // Show each transaction in a row
+                        // Show each transaction
                         ForEach(transactions) { transaction in
                             NavigationLink(value: transaction) {
                                 HStack {
@@ -65,16 +68,24 @@ struct ContentView: View {
                                 }
                             }
                         }
-                        // Swipe left to delete
                         .onDelete(perform: deleteTransaction)
                     }
                 }
             }
-            .navigationTitle(NSLocalizedString("finance_tracker_title", comment: "App title"))
+            .navigationTitle("Finance Tracker")
             .toolbar {
-                // Plus button to add new transaction
-                Button(action: { showingAddSheet = true }) {
-                    Image(systemName: "plus")
+                // NEW: Chart button (top left)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingChartSheet = true }) {
+                        Label("Chart", systemImage: "chart.bar.fill")
+                    }
+                }
+                
+                // Add button (top right)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddSheet = true }) {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         } detail: {
@@ -99,23 +110,26 @@ struct ContentView: View {
                 EditTransactionView(transactions: $transactions, transaction: transaction)
             }
         }
+        // NEW: Show "Chart" popup
+        .sheet(isPresented: $showingChartSheet) {
+            ExpenseChartView(transactions: transactions)
+        }
     }
     
-    // Delete a transaction when we swipe left
+    // Delete transaction when we swipe left
     func deleteTransaction(at offsets: IndexSet) {
         transactions.remove(atOffsets: offsets)
         selectedTransaction = nil
     }
 }
 
-// Shows the details of one transaction
 struct DetailView: View {
     let transaction: Transaction
     let onEdit: () -> Void
     
     var body: some View {
         VStack(spacing: 20) {
-            // Big icon (arrow down = income, arrow up = expense)
+            // Big icon
             Image(systemName: transaction.isIncome ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
                 .font(.system(size: 80))
                 .foregroundColor(transaction.isIncome ? .green : .red)
@@ -134,8 +148,8 @@ struct DetailView: View {
                 .font(.headline)
                 .foregroundColor(.gray)
             
-            // Type badge (Income or Expense)
-            Text(transaction.isIncome ? NSLocalizedString("income", comment: "Income type") : NSLocalizedString("expense", comment: "Expense type"))
+            // Type badge
+            Text(transaction.isIncome ? "Income" : "Expense")
                 .font(.subheadline)
                 .padding(8)
                 .background(transaction.isIncome ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
@@ -158,7 +172,161 @@ struct DetailView: View {
     }
 }
 
-// Form to add a new transaction
+// NEW: Screen that shows a chart of your spending habits
+struct ExpenseChartView: View {
+    @Environment(\.dismiss) var dismiss
+    let transactions: [Transaction]
+    
+    // Group expenses by name and add them up
+    // Example: If you have 2 "Groceries" transactions ($100 and $50),
+    // this combines them into one: Groceries = $150
+    var expensesByTitle: [ExpenseData] {
+        // Step 1: Only get expenses (skip income)
+        let expenses = transactions.filter { !$0.isIncome }
+        
+        // Step 2: Group by title (put all "Groceries" together, all "Gas" together, etc.)
+        let grouped = Dictionary(grouping: expenses) { $0.title }
+        
+        // Step 3: Add up the amounts for each group
+        return grouped.map { title, transactionList in
+            let total = transactionList.reduce(0) { $0 + $1.amount }
+            return ExpenseData(title: title, total: total)
+        }
+        .sorted { $0.total > $1.total }  // Put biggest expense first
+    }
+    
+    // Add up ALL expenses to get a total
+    var totalExpenses: Double {
+        expensesByTitle.reduce(0) { $0 + $1.total }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 30) {
+                    // Check if we have any expenses
+                    if expensesByTitle.isEmpty {
+                        // No expenses yet - show message
+                        VStack(spacing: 20) {
+                            Image(systemName: "chart.bar")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            Text("No expenses to show yet")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                            Text("Add some expense transactions to see your spending habits!")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                        }
+                        .padding(.top, 100)
+                    } else {
+                        // We have expenses - show the chart!
+                        
+                        // Total expenses at the top
+                        VStack(spacing: 8) {
+                            Text("Total Expenses")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            Text("$\(totalExpenses, specifier: "%.2f")")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(.red)
+                        }
+                        .padding(.top)
+                        
+                        // Bar chart showing each category
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Spending by Category")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding(.horizontal)
+                            
+                            // The actual bar chart
+                            Chart(expensesByTitle) { expense in
+                                // Make a horizontal bar for each expense type
+                                BarMark(
+                                    x: .value("Amount", expense.total),  // How long the bar is
+                                    y: .value("Category", expense.title) // Which row it's on
+                                )
+                                .foregroundStyle(.red)  // Red bars for expenses
+                                .annotation(position: .trailing) {
+                                    // Put the dollar amount at the end of each bar
+                                    Text("$\(expense.total, specifier: "%.0f")")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .frame(height: CGFloat(expensesByTitle.count * 50))  // Make chart taller if we have more categories
+                            .padding()
+                        }
+                        
+                        // Detailed list below the chart
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Breakdown")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding(.horizontal)
+                            
+                            // Show each expense category in a box
+                            ForEach(expensesByTitle) { expense in
+                                HStack {
+                                    // Category name (e.g., "Groceries")
+                                    Text(expense.title)
+                                        .font(.headline)
+                                    
+                                    Spacer()
+                                    
+                                    VStack(alignment: .trailing) {
+                                        // How much spent
+                                        Text("$\(expense.total, specifier: "%.2f")")
+                                            .font(.headline)
+                                            .foregroundColor(.red)
+                                        
+                                        // What percent of total (e.g., "25%")
+                                        Text("\(expense.percentage(of: totalExpenses), specifier: "%.1f")%")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding()
+                                .background(Color(.systemGray6))  // Light gray background
+                                .cornerRadius(10)
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+                .padding(.vertical)
+            }
+            .navigationTitle("Expense Habits")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Done button to close the chart
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Helper: Holds data for one expense category
+struct ExpenseData: Identifiable {
+    let id = UUID()
+    let title: String  // Name (e.g., "Groceries")
+    let total: Double  // Total amount spent
+    
+    // Calculate what percent this is of all expenses
+    // Example: If you spent $100 on groceries and $400 total, this returns 25
+    func percentage(of total: Double) -> Double {
+        guard total > 0 else { return 0 }
+        return (self.total / total) * 100
+    }
+}
+
 struct AddTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
@@ -167,61 +335,45 @@ struct AddTransactionView: View {
     @State private var amount = ""
     @State private var isIncome = false
     @State private var date = Date()
-    @State private var showError = false  // Shows error message if amount is invalid
+    @State private var showError = false
     
     var body: some View {
         NavigationStack {
             Form {
-                // Type in the name
-                TextField(NSLocalizedString("title", comment: "Title field"), text: $title)
-                
-                // Type in the amount
-                TextField(NSLocalizedString("amount", comment: "Amount field"), text: $amount)
+                TextField("Title", text: $title)
+                TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
-                
-                // Pick a date
                 DatePicker("Date", selection: $date, displayedComponents: .date)
+                Toggle("Income", isOn: $isIncome)
                 
-                // Switch to choose Income or Expense
-                Toggle(NSLocalizedString("income", comment: "Income toggle"), isOn: $isIncome)
-                
-                // Show error message if amount is not a valid number
                 if showError {
                     Text("Please enter a valid number for amount")
                         .foregroundColor(.red)
                         .font(.caption)
                 }
             }
-            .navigationTitle(NSLocalizedString("add_transaction", comment: "Add transaction title"))
+            .navigationTitle("Add Transaction")
             .toolbar {
-                // Cancel button
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("cancel", comment: "Cancel button")) {
+                    Button("Cancel") {
                         dismiss()
                     }
                 }
-                // Save button
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("save", comment: "Save button")) {
-                        // Try to convert amount text to a number
+                    Button("Save") {
                         if let amountValue = Double(amount) {
-                            // Success! Create the transaction
                             let transaction = Transaction(
                                 title: title,
                                 amount: amountValue,
                                 isIncome: isIncome,
                                 date: date
                             )
-                            // Add it to the list
                             transactions.append(transaction)
-                            // Close the popup
                             dismiss()
                         } else {
-                            // Failed - show error message
                             showError = true
                         }
                     }
-                    // Disable Save button if title or amount is empty
                     .disabled(title.isEmpty || amount.isEmpty)
                 }
             }
@@ -229,7 +381,6 @@ struct AddTransactionView: View {
     }
 }
 
-// Form to edit an existing transaction
 struct EditTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
@@ -239,9 +390,8 @@ struct EditTransactionView: View {
     @State private var amount: String
     @State private var isIncome: Bool
     @State private var date: Date
-    @State private var showError = false  // Shows error message if amount is invalid
+    @State private var showError = false
     
-    // Set up the form with the transaction's current info
     init(transactions: Binding<[Transaction]>, transaction: Transaction) {
         self._transactions = transactions
         self.transaction = transaction
@@ -254,20 +404,12 @@ struct EditTransactionView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Change the name
-                TextField(NSLocalizedString("title", comment: "Title field"), text: $title)
-                
-                // Change the amount
-                TextField(NSLocalizedString("amount", comment: "Amount field"), text: $amount)
+                TextField("Title", text: $title)
+                TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
-                
-                // Change the date
                 DatePicker("Date", selection: $date, displayedComponents: .date)
+                Toggle("Income", isOn: $isIncome)
                 
-                // Change Income/Expense
-                Toggle(NSLocalizedString("income", comment: "Income toggle"), isOn: $isIncome)
-                
-                // Show error message if amount is not a valid number
                 if showError {
                     Text("Please enter a valid number for amount")
                         .foregroundColor(.red)
@@ -276,20 +418,15 @@ struct EditTransactionView: View {
             }
             .navigationTitle("Edit Transaction")
             .toolbar {
-                // Cancel button
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("cancel", comment: "Cancel button")) {
+                    Button("Cancel") {
                         dismiss()
                     }
                 }
-                // Save button
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("save", comment: "Save button")) {
-                        // Try to convert amount text to a number
+                    Button("Save") {
                         if let amountValue = Double(amount) {
-                            // Find the transaction in the list
                             if let index = transactions.firstIndex(where: { $0.id == transaction.id }) {
-                                // Update it with new info
                                 transactions[index] = Transaction(
                                     id: transaction.id,
                                     title: title,
@@ -298,14 +435,11 @@ struct EditTransactionView: View {
                                     date: date
                                 )
                             }
-                            // Close the popup
                             dismiss()
                         } else {
-                            // Failed - show error message
                             showError = true
                         }
                     }
-                    // Disable Save button if title or amount is empty
                     .disabled(title.isEmpty || amount.isEmpty)
                 }
             }
