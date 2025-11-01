@@ -1,13 +1,14 @@
 //
+//
 //  ContentView.swift
 //  FinancialTracker
 //
 //  Created by Roy Dimapilis on 11/1/25.
 
-
 import SwiftUI
 
 struct ContentView: View {
+    // List of all our transactions (loads from saved data)
     @State private var transactions: [Transaction] = []
     @State private var selectedTransaction: Transaction?
     @State private var showingAddSheet = false
@@ -171,17 +172,21 @@ struct ContentView: View {
         }
         // Show "Add Transaction" popup
         .sheet(isPresented: $showingAddSheet) {
-            AddTransactionView(transactions: $transactions)
+            AddTransactionView(transactions: $transactions, onSave: saveTransactions)
         }
         // Show "Edit Transaction" popup
         .sheet(isPresented: $showingEditSheet) {
             if let transaction = selectedTransaction {
-                EditTransactionView(transactions: $transactions, transaction: transaction)
+                EditTransactionView(transactions: $transactions, transaction: transaction, onSave: saveTransactions)
             }
         }
         // Show "Chart" popup
         .sheet(isPresented: $showingChartSheet) {
             ExpenseChartView(transactions: transactions)
+        }
+        // Load saved data when app opens
+        .onAppear {
+            loadTransactions()
         }
     }
     
@@ -189,6 +194,30 @@ struct ContentView: View {
     func deleteTransaction(at offsets: IndexSet) {
         transactions.remove(atOffsets: offsets)
         selectedTransaction = nil
+        saveTransactions()  // Save after deleting
+    }
+    
+    // Save all transactions to permanent storage
+    func saveTransactions() {
+        // Convert transactions to data
+        if let encoded = try? JSONEncoder().encode(transactions) {
+            // Save to UserDefaults (like a file on the iPad)
+            UserDefaults.standard.set(encoded, forKey: "SavedTransactions")
+            print("✅ Saved \(transactions.count) transactions!")
+        }
+    }
+    
+    // Load all transactions from permanent storage
+    func loadTransactions() {
+        // Get saved data from UserDefaults
+        if let savedData = UserDefaults.standard.data(forKey: "SavedTransactions"),
+           // Convert data back to transactions
+           let decoded = try? JSONDecoder().decode([Transaction].self, from: savedData) {
+            transactions = decoded
+            print("✅ Loaded \(transactions.count) transactions!")
+        } else {
+            print("ℹ️ No saved transactions found - starting fresh")
+        }
     }
 }
 

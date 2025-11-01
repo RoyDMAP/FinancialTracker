@@ -11,6 +11,7 @@ struct EditTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
     let transaction: Transaction
+    let onSave: () -> Void  // Save function
     
     @State private var title: String
     @State private var amount: String
@@ -18,10 +19,10 @@ struct EditTransactionView: View {
     @State private var date: Date
     @State private var showError = false
     
-    // Set up the form with the transaction's current info
-    init(transactions: Binding<[Transaction]>, transaction: Transaction) {
+    init(transactions: Binding<[Transaction]>, transaction: Transaction, onSave: @escaping () -> Void) {
         self._transactions = transactions
         self.transaction = transaction
+        self.onSave = onSave
         self._title = State(initialValue: transaction.title)
         self._amount = State(initialValue: String(transaction.amount))
         self._isIncome = State(initialValue: transaction.isIncome)
@@ -31,7 +32,6 @@ struct EditTransactionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Gradient background
                 LinearGradient(
                     colors: [Color.orange.opacity(0.1), Color.pink.opacity(0.1)],
                     startPoint: .topLeading,
@@ -42,16 +42,12 @@ struct EditTransactionView: View {
                 Form {
                     Section("Transaction Details") {
                         TextField("Title", text: $title)
- 
                         TextField("Amount", text: $amount)
                             .keyboardType(.decimalPad)
-                      
                         DatePicker("Date", selection: $date, displayedComponents: .date)
-                       
                         Toggle("Income", isOn: $isIncome)
                     }
                     
-                    // Show error message if amount is invalid
                     if showError {
                         Section {
                             Text("Please enter a valid number for amount")
@@ -65,20 +61,15 @@ struct EditTransactionView: View {
             .navigationTitle("Edit Transaction")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Cancel button
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
-                // Save button
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        // Try to convert amount text to a number
                         if let amountValue = Double(amount) {
-                            // Find the transaction in the list
                             if let index = transactions.firstIndex(where: { $0.id == transaction.id }) {
-                                // Update it with new info
                                 transactions[index] = Transaction(
                                     id: transaction.id,
                                     title: title,
@@ -87,10 +78,9 @@ struct EditTransactionView: View {
                                     date: date
                                 )
                             }
-                            // Close the popup
+                            onSave()  // Save data
                             dismiss()
                         } else {
-                            // Failed - show error message
                             showError = true
                         }
                     }
@@ -104,11 +94,7 @@ struct EditTransactionView: View {
 #Preview {
     EditTransactionView(
         transactions: .constant([]),
-        transaction: Transaction(
-            title: "Groceries",
-            amount: 150,
-            isIncome: false,
-            date: Date()
-        )
+        transaction: Transaction(title: "Groceries", amount: 150, isIncome: false, date: Date()),
+        onSave: {}
     )
 }

@@ -12,23 +12,17 @@ struct ExpenseChartView: View {
     @Environment(\.dismiss) var dismiss
     let transactions: [Transaction]
     
-    // Group expenses by name and add them up
+    // Group expenses by title and sum them
     var expensesByTitle: [ExpenseData] {
-        // Step 1: Only get expenses (skip income)
         let expenses = transactions.filter { !$0.isIncome }
-        
-        // Group by title
         let grouped = Dictionary(grouping: expenses) { $0.title }
-        
-        // Add up the amounts for each group
         return grouped.map { title, transactionList in
             let total = transactionList.reduce(0) { $0 + $1.amount }
             return ExpenseData(title: title, total: total)
         }
-        .sorted { $0.total > $1.total }  // Put biggest expense first
+        .sorted { $0.total > $1.total }
     }
     
-    // Add up ALL expenses to get a total
     var totalExpenses: Double {
         expensesByTitle.reduce(0) { $0 + $1.total }
     }
@@ -36,7 +30,6 @@ struct ExpenseChartView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Cool gradient background for chart view
                 LinearGradient(
                     colors: [Color.purple.opacity(0.1), Color.blue.opacity(0.1)],
                     startPoint: .topLeading,
@@ -47,7 +40,6 @@ struct ExpenseChartView: View {
                 ScrollView {
                     VStack(spacing: 25) {
                         if expensesByTitle.isEmpty {
-                            // No expenses yet - show message
                             VStack(spacing: 20) {
                                 Image(systemName: "chart.bar")
                                     .font(.system(size: 70))
@@ -65,7 +57,6 @@ struct ExpenseChartView: View {
                             .padding(.top, 80)
                         } else {
                             
-                            // Total expenses card
                             VStack(spacing: 12) {
                                 Text("Total Expenses")
                                     .font(.headline)
@@ -89,14 +80,12 @@ struct ExpenseChartView: View {
                             )
                             .padding(.horizontal)
                             
-                            // Bar chart card
                             VStack(alignment: .leading, spacing: 15) {
                                 Text("Spending by Category")
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .padding(.horizontal)
                                 
-                                // The actual bar chart
                                 Chart(expensesByTitle) { expense in
                                     BarMark(
                                         x: .value("Amount", expense.total),
@@ -126,7 +115,6 @@ struct ExpenseChartView: View {
                             )
                             .padding(.horizontal)
                             
-                            // Breakdown list
                             VStack(alignment: .leading, spacing: 15) {
                                 Text("Breakdown")
                                     .font(.title2)
@@ -135,7 +123,6 @@ struct ExpenseChartView: View {
                                 
                                 ForEach(expensesByTitle) { expense in
                                     HStack {
-                                        // Icon circle
                                         ZStack {
                                             Circle()
                                                 .fill(Color.red.opacity(0.2))
@@ -186,13 +173,11 @@ struct ExpenseChartView: View {
     }
 }
 
-// Helper: Holds data for one expense category
 struct ExpenseData: Identifiable {
     let id = UUID()
-    let title: String  // Name (e.g., "Groceries")
-    let total: Double  // Total amount spent
+    let title: String
+    let total: Double
     
-    // Calculate what percent this is of all expenses
     func percentage(of total: Double) -> Double {
         guard total > 0 else { return 0 }
         return (self.total / total) * 100
