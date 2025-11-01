@@ -27,6 +27,7 @@
 		913E41382EB682F80064F4B3 /* FinancialTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FinancialTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		913E41452EB682F90064F4B3 /* FinancialTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FinancialTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		913E414F2EB682F90064F4B3 /* FinancialTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FinancialTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		913E41652EB686010064F4B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +76,7 @@
 		913E412F2EB682F70064F4B3 = {
 			isa = PBXGroup;
 			children = (
+				913E41652EB686010064F4B3 /* Info.plist */,
 				913E413A2EB682F80064F4B3 /* FinancialTracker */,
 				913E41482EB682F90064F4B3 /* FinancialTrackerTests */,
 				913E41522EB682F90064F4B3 /* FinancialTrackerUITests */,
