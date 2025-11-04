@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    // List of all our transactions (loads from saved data)
     @State private var transactions: [Transaction] = []
     @State private var selectedTransaction: Transaction?
     @State private var showingAddSheet = false
@@ -59,8 +58,8 @@ struct ContentView: View {
                             // Gradient card background
                             LinearGradient(
                                 colors: balance >= 0
-                                    ? [Color.green.opacity(0.1), Color.green.opacity(0.05)]
-                                    : [Color.red.opacity(0.1), Color.red.opacity(0.05)],
+                                ? [Color.green.opacity(0.1), Color.green.opacity(0.05)]
+                                : [Color.red.opacity(0.1), Color.red.opacity(0.05)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -187,6 +186,9 @@ struct ContentView: View {
         // Load saved data when app opens
         .onAppear {
             loadTransactions()
+        }
+        .onChange(of: transactions) { oldValue, newValue in
+            // Update external display when transactions change
         }
     }
     

@@ -9,6 +9,11 @@ import SwiftUI
 
 @main
 struct FinancialTrackerApp: App {
+    init() {
+        // Initialize external display manager
+        _ = ExternalDisplayManager.shared
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
