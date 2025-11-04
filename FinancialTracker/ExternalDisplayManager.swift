@@ -11,6 +11,7 @@ import UIKit
 class ExternalDisplayManager {
     static let shared = ExternalDisplayManager()
     private var externalWindow: UIWindow?
+    private var mainWindowScene: UIWindowScene?
     
     private init() {
         NotificationCenter.default.addObserver(
@@ -34,8 +35,14 @@ class ExternalDisplayManager {
     @objc private func sceneWillConnect(notification: Notification) {
         guard let windowScene = notification.object as? UIWindowScene else { return }
         
-        // Check if this is an external display (not the main device screen)
-        if windowScene.screen.bounds != windowScene.coordinateSpace.bounds {
+        // Store the first scene as main window
+        if mainWindowScene == nil {
+            mainWindowScene = windowScene
+            return
+        }
+        
+        // Any additional scene is treated as external display
+        if windowScene != mainWindowScene {
             DispatchQueue.main.async {
                 self.setupExternalDisplay(for: windowScene)
             }
