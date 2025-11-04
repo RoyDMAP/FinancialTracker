@@ -1,5 +1,4 @@
 //
-//
 //  ContentView.swift
 //  FinancialTracker
 //
@@ -12,21 +11,37 @@ struct ContentView: View {
     @State private var selectedTransaction: Transaction?
     @State private var showingAddSheet = false
     @State private var showingEditSheet = false
-    @State private var showingChartSheet = false
+    @State private var selectedMonth: Date?
+    @State private var showAllTransactions = true
     
-    // Calculate total money (income minus expenses)
+    var availableMonths: [Date] {
+        let calendar = Calendar.current
+        let months = transactions.map { transaction in
+            calendar.startOfMonth(for: transaction.date)
+        }
+        return Array(Set(months)).sorted(by: >)
+    }
+    
+    var filteredTransactions: [Transaction] {
+        guard !showAllTransactions, let month = selectedMonth else {
+            return transactions
+        }
+        
+        let calendar = Calendar.current
+        return transactions.filter { transaction in
+            calendar.isDate(transaction.date, equalTo: month, toGranularity: .month)
+        }
+    }
+    
     var balance: Double {
-        transactions.reduce(0) { total, transaction in
+        filteredTransactions.reduce(0) { total, transaction in
             total + (transaction.isIncome ? transaction.amount : -transaction.amount)
         }
     }
     
     var body: some View {
-        // Split screen: sidebar on left, detail on right
         NavigationSplitView {
-            // LEFT SIDE with gradient background
             ZStack {
-                // Cool gradient background for sidebar
                 LinearGradient(
                     colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
                     startPoint: .topLeading,
@@ -35,11 +50,37 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 List(selection: $selectedTransaction) {
-                    // Balance section
+                    Section {
+                        VStack(spacing: 12) {
+                            Toggle("Show All Months", isOn: $showAllTransactions)
+                                .font(.subheadline)
+                                .onChange(of: showAllTransactions) { oldValue, newValue in
+                                    if !newValue && !availableMonths.isEmpty {
+                                        selectedMonth = availableMonths.first
+                                    }
+                                }
+                            
+                            if !showAllTransactions && !availableMonths.isEmpty {
+                                Picker("Select Month", selection: Binding(
+                                    get: { selectedMonth ?? availableMonths.first ?? Date() },
+                                    set: { selectedMonth = $0 }
+                                )) {
+                                    ForEach(availableMonths, id: \.self) { month in
+                                        Text(month.formatted(.dateTime.month(.wide).year()))
+                                            .tag(month)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .listRowBackground(Color.white.opacity(0.8))
+                    
                     Section {
                         HStack {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Balance")
+                                Text(showAllTransactions ? "Total Balance" : "Monthly Balance")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 Text("$\(balance, specifier: "%.2f")")
@@ -47,7 +88,6 @@ struct ContentView: View {
                                     .foregroundColor(balance >= 0 ? .green : .red)
                             }
                             Spacer()
-                            // Money icon
                             Image(systemName: "dollarsign.circle.fill")
                                 .font(.system(size: 50))
                                 .foregroundColor(balance >= 0 ? .green : .red)
@@ -55,11 +95,10 @@ struct ContentView: View {
                         }
                         .padding()
                         .background(
-                            // Gradient card background
                             LinearGradient(
                                 colors: balance >= 0
-                                ? [Color.green.opacity(0.1), Color.green.opacity(0.05)]
-                                : [Color.red.opacity(0.1), Color.red.opacity(0.05)],
+                                    ? [Color.green.opacity(0.1), Color.green.opacity(0.05)]
+                                    : [Color.red.opacity(0.1), Color.red.opacity(0.05)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -69,14 +108,13 @@ struct ContentView: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     
-                    // Transactions section
-                    Section("Transactions") {
-                        if transactions.isEmpty {
+                    Section(showAllTransactions ? "All Transactions" : "Transactions This Month") {
+                        if filteredTransactions.isEmpty {
                             VStack(spacing: 12) {
                                 Image(systemName: "tray")
                                     .font(.system(size: 40))
                                     .foregroundColor(.gray.opacity(0.5))
-                                Text("No transactions yet")
+                                Text(showAllTransactions ? "No transactions yet" : "No transactions this month")
                                     .font(.headline)
                                     .foregroundColor(.gray)
                                 Text("Tap + to add one")
@@ -87,10 +125,9 @@ struct ContentView: View {
                             .padding(.vertical, 40)
                             .listRowBackground(Color.clear)
                         } else {
-                            ForEach(transactions) { transaction in
+                            ForEach(filteredTransactions.sorted(by: { $0.date > $1.date })) { transaction in
                                 NavigationLink(value: transaction) {
                                     HStack {
-                                        // Circle icon for transaction type
                                         ZStack {
                                             Circle()
                                                 .fill(transaction.isIncome ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
@@ -119,18 +156,10 @@ struct ContentView: View {
                         }
                     }
                 }
-                .scrollContentBackground(.hidden)  // Hide default list background
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Finance Tracker")
             .toolbar {
-                // Chart button (top left)
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingChartSheet = true }) {
-                        Label("Chart", systemImage: "chart.bar.fill")
-                    }
-                }
-                
-                // Add button (top right)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddSheet = true }) {
                         Image(systemName: "plus.circle.fill")
@@ -139,9 +168,7 @@ struct ContentView: View {
                 }
             }
         } detail: {
-            // RIGHT SIDE with gradient background
             ZStack {
-                // Cool gradient background for detail view
                 LinearGradient(
                     colors: [Color.orange.opacity(0.1), Color.pink.opacity(0.1)],
                     startPoint: .topLeading,
@@ -150,11 +177,12 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 if let transaction = selectedTransaction {
-                    DetailView(transaction: transaction, onEdit: {
-                        showingEditSheet = true
-                    })
+                    DetailView(
+                        transaction: transaction,
+                        transactions: transactions,
+                        onEdit: { showingEditSheet = true }
+                    )
                 } else {
-                    // Placeholder when nothing is selected
                     VStack(spacing: 20) {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 60))
@@ -169,51 +197,38 @@ struct ContentView: View {
                 }
             }
         }
-        // Show "Add Transaction" popup
         .sheet(isPresented: $showingAddSheet) {
             AddTransactionView(transactions: $transactions, onSave: saveTransactions)
         }
-        // Show "Edit Transaction" popup
         .sheet(isPresented: $showingEditSheet) {
             if let transaction = selectedTransaction {
                 EditTransactionView(transactions: $transactions, transaction: transaction, onSave: saveTransactions)
             }
         }
-        // Show "Chart" popup
-        .sheet(isPresented: $showingChartSheet) {
-            ExpenseChartView(transactions: transactions)
-        }
-        // Load saved data when app opens
         .onAppear {
             loadTransactions()
         }
-        .onChange(of: transactions) { oldValue, newValue in
-            // Update external display when transactions change
-        }
     }
     
-    // Delete transaction when we swipe left
     func deleteTransaction(at offsets: IndexSet) {
-        transactions.remove(atOffsets: offsets)
+        let transactionsToDelete = offsets.map { filteredTransactions[$0] }
+        transactions.removeAll { transaction in
+            transactionsToDelete.contains(where: { $0.id == transaction.id })
+        }
         selectedTransaction = nil
-        saveTransactions()  // Save after deleting
+        saveTransactions()
     }
     
-    // Save all transactions to permanent storage
     func saveTransactions() {
-        // Convert transactions to data
         if let encoded = try? JSONEncoder().encode(transactions) {
-            // Save to UserDefaults (like a file on the iPad)
             UserDefaults.standard.set(encoded, forKey: "SavedTransactions")
             print("✅ Saved \(transactions.count) transactions!")
         }
+        ExternalDisplayManager.shared.updateDisplay(transactions: transactions, balance: balance)
     }
     
-    // Load all transactions from permanent storage
     func loadTransactions() {
-        // Get saved data from UserDefaults
         if let savedData = UserDefaults.standard.data(forKey: "SavedTransactions"),
-           // Convert data back to transactions
            let decoded = try? JSONDecoder().decode([Transaction].self, from: savedData) {
             transactions = decoded
             print("✅ Loaded \(transactions.count) transactions!")

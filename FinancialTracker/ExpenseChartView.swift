@@ -12,9 +12,30 @@ struct ExpenseChartView: View {
     @Environment(\.dismiss) var dismiss
     let transactions: [Transaction]
     
-    // Group expenses by title and sum them
+    @State private var selectedMonth: Date?
+    @State private var showAllTime: Bool = true
+    
+    var availableMonths: [Date] {
+        let calendar = Calendar.current
+        let months = transactions.map { transaction in
+            calendar.startOfMonth(for: transaction.date)
+        }
+        return Array(Set(months)).sorted(by: >)
+    }
+    
+    var filteredTransactions: [Transaction] {
+        guard !showAllTime, let month = selectedMonth else {
+            return transactions
+        }
+        
+        let calendar = Calendar.current
+        return transactions.filter { transaction in
+            calendar.isDate(transaction.date, equalTo: month, toGranularity: .month)
+        }
+    }
+    
     var expensesByTitle: [ExpenseData] {
-        let expenses = transactions.filter { !$0.isIncome }
+        let expenses = filteredTransactions.filter { !$0.isIncome }
         let grouped = Dictionary(grouping: expenses) { $0.title }
         return grouped.map { title, transactionList in
             let total = transactionList.reduce(0) { $0 + $1.amount }
@@ -30,25 +51,68 @@ struct ExpenseChartView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color.purple.opacity(0.1), Color.blue.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.purple.opacity(0.05)
+                    .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 25) {
+                        VStack(spacing: 15) {
+                            Text("Filter by Month")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            Toggle("Show All Time", isOn: $showAllTime)
+                                .padding(.horizontal)
+                                .onChange(of: showAllTime) { oldValue, newValue in
+                                    if newValue && !availableMonths.isEmpty {
+                                        selectedMonth = availableMonths.first
+                                    }
+                                }
+                            
+                            if !showAllTime && !availableMonths.isEmpty {
+                                Picker("Select Month", selection: Binding(
+                                    get: { selectedMonth ?? availableMonths.first ?? Date() },
+                                    set: { selectedMonth = $0 }
+                                )) {
+                                    ForEach(availableMonths, id: \.self) { month in
+                                        Text(month.formatted(.dateTime.month(.wide).year()))
+                                            .tag(month)
+                                    }
+                                }
+                                .pickerStyle(.wheel)
+                                .frame(height: 120)
+                            }
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.white.opacity(0.9))
+                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                        )
+                        .padding(.horizontal)
+                        
+                        if !showAllTime, let month = selectedMonth {
+                            Text(month.formatted(.dateTime.month(.wide).year()))
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.purple)
+                        } else {
+                            Text("All Time")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.purple)
+                        }
+                        
                         if expensesByTitle.isEmpty {
                             VStack(spacing: 20) {
                                 Image(systemName: "chart.bar")
                                     .font(.system(size: 70))
                                     .foregroundColor(.purple.opacity(0.3))
-                                Text("No expenses to show yet")
+                                Text("No expenses to show")
                                     .font(.title2)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.gray)
-                                Text("Add some expense transactions to see your spending habits!")
+                                Text(showAllTime ? "Add some expense transactions!" : "No expenses for this month")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
@@ -69,13 +133,7 @@ struct ExpenseChartView: View {
                             .padding(25)
                             .background(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.red.opacity(0.1), Color.orange.opacity(0.1)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Color.red.opacity(0.1))
                                     .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                             )
                             .padding(.horizontal)
@@ -91,13 +149,7 @@ struct ExpenseChartView: View {
                                         x: .value("Amount", expense.total),
                                         y: .value("Category", expense.title)
                                     )
-                                    .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [Color.red, Color.orange],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
+                                    .foregroundStyle(Color.red)
                                     .annotation(position: .trailing) {
                                         Text("$\(expense.total, specifier: "%.0f")")
                                             .font(.caption)
@@ -168,6 +220,11 @@ struct ExpenseChartView: View {
                         dismiss()
                     }
                 }
+            }
+        }
+        .onAppear {
+            if !availableMonths.isEmpty {
+                selectedMonth = availableMonths.first
             }
         }
     }

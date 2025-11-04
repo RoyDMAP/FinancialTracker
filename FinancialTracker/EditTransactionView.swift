@@ -11,7 +11,7 @@ struct EditTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
     let transaction: Transaction
-    let onSave: () -> Void  // Save function
+    let onSave: () -> Void
     
     @State private var title: String
     @State private var amount: String
@@ -32,12 +32,8 @@ struct EditTransactionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color.orange.opacity(0.1), Color.pink.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.orange.opacity(0.05)
+                    .ignoresSafeArea()
                 
                 Form {
                     Section("Transaction Details") {
@@ -78,7 +74,7 @@ struct EditTransactionView: View {
                                     date: date
                                 )
                             }
-                            onSave()  // Save data
+                            onSave()
                             dismiss()
                         } else {
                             showError = true

@@ -35,13 +35,11 @@ class ExternalDisplayManager {
     @objc private func sceneWillConnect(notification: Notification) {
         guard let windowScene = notification.object as? UIWindowScene else { return }
         
-        // Store the first scene as main window
         if mainWindowScene == nil {
             mainWindowScene = windowScene
             return
         }
         
-        // Any additional scene is treated as external display
         if windowScene != mainWindowScene {
             DispatchQueue.main.async {
                 self.setupExternalDisplay(for: windowScene)
@@ -91,12 +89,8 @@ struct ExternalDisplayView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.blue.opacity(0.2)
+                .ignoresSafeArea()
             
             VStack(spacing: 40) {
                 Text("Financial Tracker")

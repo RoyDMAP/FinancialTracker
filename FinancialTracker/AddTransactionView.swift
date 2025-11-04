@@ -10,7 +10,7 @@ import SwiftUI
 struct AddTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var transactions: [Transaction]
-    let onSave: () -> Void  // Save function
+    let onSave: () -> Void
     
     @State private var title = ""
     @State private var amount = ""
@@ -21,12 +21,8 @@ struct AddTransactionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color.green.opacity(0.1), Color.blue.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.green.opacity(0.05)
+                    .ignoresSafeArea()
                 
                 Form {
                     Section("Transaction Details") {
@@ -65,7 +61,7 @@ struct AddTransactionView: View {
                                 date: date
                             )
                             transactions.append(transaction)
-                            onSave()  // Save data
+                            onSave()
                             dismiss()
                         } else {
                             showError = true
