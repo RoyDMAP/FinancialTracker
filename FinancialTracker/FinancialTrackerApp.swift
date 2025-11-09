@@ -9,14 +9,17 @@ import SwiftUI
 
 @main
 struct FinancialTrackerApp: App {
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    
     init() {
-        // Initialize external display manager
         _ = ExternalDisplayManager.shared
     }
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            UserSelectionView()
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .environment(\.colorScheme, isDarkMode ? .dark : .light)  
         }
     }
 }
