@@ -25,17 +25,17 @@ struct AddTransactionView: View {
                     .ignoresSafeArea()
                 
                 Form {
-                    Section("Transaction Details") {
-                        TextField("Title", text: $title)
-                        TextField("Amount", text: $amount)
+                    Section("transaction_details") {
+                        TextField(NSLocalizedString("title", comment: "Title"), text: $title)
+                        TextField(NSLocalizedString("amount", comment: "Amount"), text: $amount)
                             .keyboardType(.decimalPad)
-                        DatePicker("Date", selection: $date, displayedComponents: .date)
-                        Toggle("Income", isOn: $isIncome)
+                        DatePicker(NSLocalizedString("date", comment: "Date"), selection: $date, displayedComponents: .date)
+                        Toggle(NSLocalizedString("income", comment: "Income"), isOn: $isIncome)
                     }
                     
                     if showError {
                         Section {
-                            Text("Please enter a valid number for amount")
+                            Text(NSLocalizedString("error_invalid_amount", comment: "Please enter a valid number for amount"))
                                 .foregroundColor(.red)
                                 .font(.caption)
                         }
@@ -43,16 +43,16 @@ struct AddTransactionView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Add Transaction")
+            .navigationTitle("add_transaction")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button("save") {
                         if let amountValue = Double(amount) {
                             let transaction = Transaction(
                                 title: title,
