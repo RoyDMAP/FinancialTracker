@@ -25,8 +25,12 @@ struct UserSelectionView: View {
                     userListView
                 }
             }
-            .navigationTitle("Financial Tracker")
+            .navigationTitle(NSLocalizedString("financial_tracker", comment: "Financial Tracker"))
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    LocalizedImageView(imageName: "background-flag")
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddUser = true }) {
                         Image(systemName: "person.badge.plus")
@@ -57,16 +61,16 @@ struct UserSelectionView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue.opacity(0.5))
             
-            Text("No Users Yet")
+            Text(NSLocalizedString("no_users_yet", comment: "No Users Yet"))
                 .font(.title)
                 .fontWeight(.bold)
             
-            Text("Create a profile to get started")
+            Text(NSLocalizedString("create_profile_prompt", comment: "Create a profile to get started"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
             Button(action: { showingAddUser = true }) {
-                Label("Add User", systemImage: "person.badge.plus")
+                Label(NSLocalizedString("add_user", comment: "Add User"), systemImage: "person.badge.plus")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -81,7 +85,7 @@ struct UserSelectionView: View {
     private var userListView: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("Select User")
+                Text(NSLocalizedString("select_user", comment: "Select User"))
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top, 30)
@@ -114,6 +118,7 @@ struct UserSelectionView: View {
     }
 }
 
+// MARK: - User Card
 struct UserCard: View {
     let user: User
     let action: () -> Void
@@ -141,6 +146,7 @@ struct UserCard: View {
     }
 }
 
+// MARK: - Add User View
 struct AddUserView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var users: [User]
@@ -154,12 +160,12 @@ struct AddUserView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("User Details") {
-                    TextField("Name", text: $name)
+                Section(NSLocalizedString("user_details", comment: "User Details")) {
+                    TextField(NSLocalizedString("name", comment: "Name"), text: $name)
                         .font(.headline)
                 }
                 
-                Section("Choose Icon") {
+                Section(NSLocalizedString("choose_icon", comment: "Choose Icon")) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 15) {
                         ForEach(emojis, id: \.self) { emoji in
                             Text(emoji)
@@ -177,17 +183,17 @@ struct AddUserView: View {
                     .padding(.vertical, 10)
                 }
             }
-            .navigationTitle("Add User")
+            .navigationTitle(NSLocalizedString("add_user", comment: "Add User"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(NSLocalizedString("cancel", comment: "Cancel")) {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button(NSLocalizedString("save", comment: "Save")) {
                         saveUser()
                     }
                     .disabled(name.isEmpty)

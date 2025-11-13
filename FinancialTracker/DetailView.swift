@@ -10,6 +10,9 @@ struct DetailView: View {
     let transaction: Transaction
     let transactions: [Transaction]
     let onEdit: () -> Void
+    let onDelete: () -> Void
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
@@ -60,7 +63,7 @@ struct DetailView: View {
                     Button(action: onEdit) {
                         HStack {
                             Image(systemName: "pencil")
-                            Text("Edit Transaction")
+                            Text(NSLocalizedString("edit_transaction", comment: "Edit Transaction"))
                         }
                         .font(.headline)
                         .foregroundColor(.white)
@@ -72,6 +75,25 @@ struct DetailView: View {
                     }
                     .padding(.horizontal, 30)
                     
+                    // Delete Button
+                    Button(role: .destructive) {
+                        onDelete()
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text(NSLocalizedString("delete_transaction", comment: "Delete Transaction"))
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red)
+                        .cornerRadius(15)
+                        .shadow(color: Color.red.opacity(0.3), radius: 5, x: 0, y: 3)
+                    }
+                    .padding(.horizontal, 30)
+                    
                     // Navigation Links Section
                     VStack(spacing: 15) {
                         // Link to Expense Chart
@@ -79,7 +101,7 @@ struct DetailView: View {
                             HStack {
                                 Image(systemName: "chart.bar.fill")
                                     .font(.title2)
-                                Text("View Expense Chart")
+                                Text(NSLocalizedString("view_expense_chart", comment: "View Expense Chart"))
                                     .font(.headline)
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -98,7 +120,7 @@ struct DetailView: View {
                             HStack {
                                 Image(systemName: "calendar")
                                     .font(.title2)
-                                Text("View Monthly Report")
+                                Text(NSLocalizedString("view_monthly_report", comment: "View Monthly Report"))
                                     .font(.headline)
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -132,6 +154,7 @@ struct DetailView: View {
             Transaction(title: "Groceries", amount: 150, isIncome: false, date: Date()),
             Transaction(title: "Gas", amount: 50, isIncome: false, date: Date())
         ],
-        onEdit: {}
+        onEdit: {},
+        onDelete: {}
     )
 }

@@ -25,7 +25,35 @@ struct AddTransactionView: View {
                     .ignoresSafeArea()
                 
                 Form {
-                    Section("transaction_details") {
+                    // NEW: Description Section
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(NSLocalizedString("transaction_description", comment: "Track your income and expenses easily"))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Button(action: {
+                                // Quick fill example
+                                title = NSLocalizedString("example_transaction", comment: "Groceries")
+                                amount = "50.00"
+                            }) {
+                                HStack {
+                                    Image(systemName: "sparkles")
+                                    Text(NSLocalizedString("try_example", comment: "Try an Example"))
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    Section(NSLocalizedString("transaction_details", comment: "Transaction Details")) {
                         TextField(NSLocalizedString("title", comment: "Title"), text: $title)
                         TextField(NSLocalizedString("amount", comment: "Amount"), text: $amount)
                             .keyboardType(.decimalPad)
@@ -43,16 +71,16 @@ struct AddTransactionView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("add_transaction")
+            .navigationTitle(NSLocalizedString("add_transaction", comment: "Add Transaction"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("cancel") {
+                    Button(NSLocalizedString("cancel", comment: "Cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("save") {
+                    Button(NSLocalizedString("save", comment: "Save")) {
                         if let amountValue = Double(amount) {
                             let transaction = Transaction(
                                 title: title,
