@@ -202,7 +202,7 @@
 				Base,
 				"es-419",
 				ja,
-				"zh-Hant",
+				ar,
 			);
 			mainGroup = 913E412F2EB682F70064F4B3;
 			minimizedProjectReferenceProxies = 1;

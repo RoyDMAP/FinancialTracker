@@ -5,6 +5,12 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متعقب الشؤون المالية"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",

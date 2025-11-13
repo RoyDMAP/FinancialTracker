@@ -18,6 +18,8 @@ struct LocalizedImageView: View {
             return "flag-es"
         case "ja":
             return "flag-ja"
+        case "ar":
+            return "flag-ar"
         default:
             return "flag-en"
         }
@@ -31,6 +33,8 @@ struct LocalizedImageView: View {
             return "🇲🇽" // Mexico flag for Latin American Spanish
         case "ja":
             return "🇯🇵" // Japan flag
+        case "ar":
+            return "🇸🇦" // Saudi Arabia flag for Arabic
         default:
             return "🇺🇸" // US flag
         }

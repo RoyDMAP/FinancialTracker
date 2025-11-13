@@ -11,6 +11,7 @@ struct ContentView: View {
     var onLogout: (() -> Void)?
     
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    @Environment(\.locale) var locale  // Detects locale changes
     
     @State private var transactions: [Transaction] = []
     @State private var selectedTransaction: Transaction?
@@ -42,15 +43,16 @@ struct ContentView: View {
     
     var balance: Double {
         filteredTransactions.reduce(0) { total, transaction in
-            total + (transaction.isIncome ? transaction.amount : -transaction.amount)
+            total + (transaction.isIncome ? transaction.amountUSD : -transaction.amountUSD)
         }
     }
     
     var body: some View {
-        NavigationSplitView {
+        let theme = AppTheme.current
+        
+        return NavigationSplitView {
             ZStack {
-                Color(uiColor: .systemGroupedBackground)
-                    .ignoresSafeArea()
+                ThemedBackground(theme: theme)
                 
                 List(selection: $selectedTransaction) {
                     Section {
@@ -78,7 +80,7 @@ struct ContentView: View {
                         }
                         .padding(.vertical, 8)
                     }
-                    .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
+                    .listRowBackground(theme.cardBackground)
                     
                     Section {
                         HStack {
@@ -86,20 +88,27 @@ struct ContentView: View {
                                 Text(showAllTransactions ? "Total Balance" : "Monthly Balance")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-                                Text("$\(balance, specifier: "%.2f")")
-                                    .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(balance >= 0 ? .green : .red)
+                                
+                                // Convert balance to local currency
+                                let localBalance = CurrencyConverter.shared.convertFromUSD(balance)
+                                Text(CurrencyConverter.shared.format(localBalance))
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(balance >= 0 ? theme.incomeColor : theme.expenseColor)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
+                                    .id(locale)  // Force refresh on locale change
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             Spacer()
                             Image(systemName: "dollarsign.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(balance >= 0 ? .green : .red)
+                                .foregroundColor(balance >= 0 ? theme.incomeColor : theme.expenseColor)
                                 .opacity(0.3)
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 15)
-                                .fill(balance >= 0 ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
+                                .fill(balance >= 0 ? theme.incomeColor.opacity(0.1) : theme.expenseColor.opacity(0.1))
                         )
                     }
                     .listRowBackground(Color.clear)
@@ -124,11 +133,12 @@ struct ContentView: View {
                         } else {
                             ForEach(filteredTransactions.sorted(by: { $0.date > $1.date })) { transaction in
                                 NavigationLink(value: transaction) {
-                                    TransactionRow(transaction: transaction)
+                                    TransactionRow(transaction: transaction, theme: theme)
+                                        .id("\(transaction.id)-\(locale)")  // Force refresh on locale change
                                 }
                             }
                             .onDelete(perform: deleteTransaction)
-                            .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
+                            .listRowBackground(theme.cardBackground)
                         }
                     }
                 }
@@ -142,6 +152,7 @@ struct ContentView: View {
                     }) {
                         Image(systemName: "ellipsis.circle")
                             .font(.title3)
+                            .foregroundColor(theme.primaryColor)
                     }
                 }
                 
@@ -149,13 +160,13 @@ struct ContentView: View {
                     Button(action: { showingAddSheet = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .foregroundColor(theme.primaryColor)
                     }
                 }
             }
         } detail: {
             ZStack {
-                Color(uiColor: .systemGroupedBackground)
-                    .ignoresSafeArea()
+                ThemedBackground(theme: theme)
                 
                 if let transaction = selectedTransaction {
                     DetailView(
@@ -199,8 +210,23 @@ struct ContentView: View {
         }
         .confirmationDialog("Options", isPresented: $showingOptionsSheet) {
             if let user = currentUser {
-                Button("\(user.emoji) \(user.name)") { }
-                    .disabled(true)
+                Button(action: {}) {
+                    HStack(spacing: 8) {
+                        if let photoData = user.photoData,
+                           let uiImage = UIImage(data: photoData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 30, height: 30)
+                                .clipShape(Circle())
+                        } else {
+                            Text(user.emoji)
+                                .font(.title3)
+                        }
+                        Text(user.name)
+                    }
+                }
+                .disabled(true)
             }
             
             Button(NSLocalizedString("drawing_notes", comment: "Drawing Notes")) {
@@ -244,25 +270,18 @@ struct ContentView: View {
     }
     
     func deleteTransaction(at offsets: IndexSet) {
-        // Get the IDs of transactions to delete from the filtered list
         let idsToDelete = offsets.map { filteredTransactions[$0].id }
-        
-        // Remove from the main transactions array by ID
         transactions.removeAll { transaction in
             idsToDelete.contains(transaction.id)
         }
-        
-        // Clear selection if the deleted transaction was selected
         if let selected = selectedTransaction, idsToDelete.contains(selected.id) {
             selectedTransaction = nil
         }
-        
         saveTransactions()
     }
     
     func saveTransactions() {
         let key = currentUser != nil ? "SavedTransactions_\(currentUser!.id.uuidString)" : "SavedTransactions"
-        
         if let encoded = try? JSONEncoder().encode(transactions) {
             UserDefaults.standard.set(encoded, forKey: key)
             print("✅ Saved \(transactions.count) transactions")
@@ -272,7 +291,6 @@ struct ContentView: View {
     
     func loadTransactions() {
         let key = currentUser != nil ? "SavedTransactions_\(currentUser!.id.uuidString)" : "SavedTransactions"
-        
         if let savedData = UserDefaults.standard.data(forKey: key),
            let decoded = try? JSONDecoder().decode([Transaction].self, from: savedData) {
             transactions = decoded
@@ -284,15 +302,17 @@ struct ContentView: View {
 // MARK: - Transaction Row
 struct TransactionRow: View {
     let transaction: Transaction
+    let theme: AppTheme
+    @Environment(\.locale) var locale
     
     var body: some View {
         HStack {
             ZStack {
                 Circle()
-                    .fill(transaction.isIncome ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .fill(transaction.isIncome ? theme.incomeColor.opacity(0.2) : theme.expenseColor.opacity(0.2))
                     .frame(width: 44, height: 44)
                 Image(systemName: transaction.isIncome ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
-                    .foregroundColor(transaction.isIncome ? .green : .red)
+                    .foregroundColor(transaction.isIncome ? theme.incomeColor : theme.expenseColor)
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.title)
@@ -302,9 +322,9 @@ struct TransactionRow: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Text("$\(transaction.amount, specifier: "%.2f")")
+            Text(transaction.formattedAmount)
                 .font(.headline)
-                .foregroundColor(transaction.isIncome ? .green : .red)
+                .foregroundColor(transaction.isIncome ? theme.incomeColor : theme.expenseColor)
         }
         .padding(.vertical, 4)
     }
