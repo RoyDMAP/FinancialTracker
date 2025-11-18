@@ -159,6 +159,7 @@ struct DetailView: View {
                 .shadow(color: theme.primaryColor.opacity(0.3), radius: 5, x: 0, y: 3)
             }
             .padding(.horizontal, 30)
+            .accessibilityIdentifier("editTransactionButton")
             
             Button(role: .destructive) {
                 onDelete()
@@ -177,6 +178,7 @@ struct DetailView: View {
                 .shadow(color: theme.expenseColor.opacity(0.3), radius: 5, x: 0, y: 3)
             }
             .padding(.horizontal, 30)
+            .accessibilityIdentifier("deleteTransactionButton")
         }
     }
     

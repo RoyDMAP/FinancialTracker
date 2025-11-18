@@ -57,6 +57,7 @@ struct AddTransactionView: View {
                     
                     Section(NSLocalizedString("transaction_details", comment: "Transaction Details")) {
                         TextField(NSLocalizedString("title", comment: "Title"), text: $title)
+                            .accessibilityIdentifier("transactionTitleField")
                         
                         // Currency input with auto-updating symbol
                         HStack {
@@ -67,10 +68,12 @@ struct AddTransactionView: View {
                             
                             TextField(NSLocalizedString("amount", comment: "Amount"), text: $amount)
                                 .keyboardType(.decimalPad)
+                                .accessibilityIdentifier("transactionAmountTextField")
                         }
                         
                         DatePicker(NSLocalizedString("date", comment: "Date"), selection: $date, displayedComponents: .date)
                         Toggle(NSLocalizedString("income", comment: "Income"), isOn: $isIncome)
+                            .accessibilityIdentifier("incomeToggle")
                         
                         // Live preview of what's being entered
                         if !amount.isEmpty, let value = Double(amount) {

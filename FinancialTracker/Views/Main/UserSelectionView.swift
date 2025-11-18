@@ -202,6 +202,7 @@ struct UserCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityIdentifier("userCard_\(user.name)")
         .confirmationDialog("User Options", isPresented: $showingOptions) {
             Button("\(user.emoji) \(user.name)") { }
                 .disabled(true)
@@ -241,6 +242,7 @@ struct AddUserView: View {
                     Section(NSLocalizedString("user_details", comment: "User Details")) {
                         TextField(NSLocalizedString("name", comment: "Name"), text: $name)
                             .font(.headline)
+                            .accessibilityIdentifier("userNameTextField")
                     }
                     .listRowBackground(theme.cardBackground)
                     

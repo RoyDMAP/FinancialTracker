@@ -154,6 +154,7 @@ struct ContentView: View {
                             .font(.title3)
                             .foregroundColor(theme.primaryColor)
                     }
+                    .accessibilityIdentifier("optionsButton")
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -162,6 +163,7 @@ struct ContentView: View {
                             .font(.title2)
                             .foregroundColor(theme.primaryColor)
                     }
+                    .accessibilityIdentifier("addTransactionButton")
                 }
             }
         } detail: {
