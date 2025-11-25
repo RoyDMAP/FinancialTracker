@@ -2,16 +2,16 @@
 //  ContentView.swift
 //  FinancialTracker
 //
-//  Created by Roy Dimapilis on 11/8/25.
 
 import SwiftUI
 
 struct ContentView: View {
     var currentUser: User?
+    @ObservedObject var storeManager: StoreManager  // ← ADD THIS
     var onLogout: (() -> Void)?
     
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
-    @Environment(\.locale) var locale  // Detects locale changes
+    @Environment(\.locale) var locale
     
     @State private var transactions: [Transaction] = []
     @State private var selectedTransaction: Transaction?
@@ -22,6 +22,8 @@ struct ContentView: View {
     @State private var showingLocaleInfo = false
     @State private var selectedMonth: Date?
     @State private var showAllTransactions = true
+    @State private var showingUpgradeAlert = false  // ← ADD THIS
+    @State private var showingUpgradeSheet = false  // ← ADD THIS
     
     var availableMonths: [Date] {
         let calendar = Calendar.current
@@ -89,17 +91,18 @@ struct ContentView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 
-                                // Convert balance to local currency
                                 let localBalance = CurrencyConverter.shared.convertFromUSD(balance)
                                 Text(CurrencyConverter.shared.format(localBalance))
                                     .font(.system(size: 28, weight: .bold))
                                     .foregroundColor(balance >= 0 ? theme.incomeColor : theme.expenseColor)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
-                                    .id(locale)  // Force refresh on locale change
+                                    .id(locale)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            
                             Spacer()
+                            
                             Image(systemName: "dollarsign.circle.fill")
                                 .font(.system(size: 50))
                                 .foregroundColor(balance >= 0 ? theme.incomeColor : theme.expenseColor)
@@ -113,6 +116,40 @@ struct ContentView: View {
                     }
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    
+                    // Show trial status if not Pro
+                    if !storeManager.isPro {
+                        Section {
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(.blue)
+                                    Text("Free Trial")
+                                        .font(.headline)
+                                    Spacer()
+                                }
+                                
+                                Text("\(transactions.count)/5 transactions used")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                Button(action: {
+                                    showingUpgradeSheet = true
+                                }) {
+                                    Text("Upgrade to Pro")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(theme.primaryColor)
+                                        .cornerRadius(10)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding()
+                        }
+                        .listRowBackground(theme.cardBackground)
+                    }
                     
                     Section(showAllTransactions ? "All Transactions" : "Transactions This Month") {
                         if filteredTransactions.isEmpty {
@@ -134,7 +171,7 @@ struct ContentView: View {
                             ForEach(filteredTransactions.sorted(by: { $0.date > $1.date })) { transaction in
                                 NavigationLink(value: transaction) {
                                     TransactionRow(transaction: transaction, theme: theme)
-                                        .id("\(transaction.id)-\(locale)")  // Force refresh on locale change
+                                        .id("\(transaction.id)-\(locale)")
                                 }
                             }
                             .onDelete(perform: deleteTransaction)
@@ -158,7 +195,14 @@ struct ContentView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddSheet = true }) {
+                    Button(action: { 
+                        // Check if user can add more transactions
+                        if storeManager.canAddTransaction(currentTransactionCount: transactions.count) {
+                            showingAddSheet = true
+                        } else {
+                            showingUpgradeAlert = true
+                        }
+                    }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                             .foregroundColor(theme.primaryColor)
@@ -210,6 +254,17 @@ struct ContentView: View {
         .sheet(isPresented: $showingLocaleInfo) {
             LocaleInfoView()
         }
+        .sheet(isPresented: $showingUpgradeSheet) {
+            UpgradeView(storeManager: storeManager)
+        }
+        .alert("Upgrade to Pro", isPresented: $showingUpgradeAlert) {
+            Button("Upgrade - $4.99") {
+                showingUpgradeSheet = true
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text(storeManager.getTransactionLimitMessage())
+        }
         .confirmationDialog("Options", isPresented: $showingOptionsSheet) {
             if let user = currentUser {
                 Button(action: {}) {
@@ -243,8 +298,6 @@ struct ContentView: View {
                 isDarkMode.toggle()
                 UserDefaults.standard.set(isDarkMode, forKey: "isDarkMode")
                 
-                print("🌙 Dark mode: \(isDarkMode)")
-                
                 Task { @MainActor in
                     for scene in UIApplication.shared.connectedScenes {
                         if let windowScene = scene as? UIWindowScene {
@@ -255,6 +308,12 @@ struct ContentView: View {
                             }
                         }
                     }
+                }
+            }
+            
+            if !storeManager.isPro {
+                Button("Upgrade to Pro - $4.99") {
+                    showingUpgradeSheet = true
                 }
             }
             
@@ -301,7 +360,7 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Transaction Row
+// TransactionRow remains the same
 struct TransactionRow: View {
     let transaction: Transaction
     let theme: AppTheme
@@ -333,5 +392,5 @@ struct TransactionRow: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(storeManager: StoreManager())
 }

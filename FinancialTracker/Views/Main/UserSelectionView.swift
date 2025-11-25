@@ -14,6 +14,9 @@ struct UserSelectionView: View {
     @State private var showingMainApp = false
     @State private var showingDeleteAlert = false
     @State private var userToDelete: User?
+    @StateObject private var storeManager = StoreManager()
+    @State private var showingUpgradeAlert = false
+    @State private var showingUpgradeSheet = false
     
     var body: some View {
         let theme = AppTheme.current
@@ -28,14 +31,20 @@ struct UserSelectionView: View {
                     userListView(theme: theme)
                 }
             }
-            .navigationTitle(NSLocalizedString("financial tracker", comment: "Financial Tracker"))
+            .navigationTitle(NSLocalizedString("financial_tracker", comment: "Financial Tracker"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     LocalizedImageView(imageName: "background-flag")
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddUser = true }) {
+                    Button(action: {
+                        if storeManager.canAddProfile(currentProfileCount: users.count) {
+                            showingAddUser = true
+                        } else {
+                            showingUpgradeAlert = true
+                        }
+                    }) {
                         Image(systemName: "person.badge.plus")
                             .font(.title2)
                             .foregroundColor(theme.primaryColor)
@@ -48,10 +57,22 @@ struct UserSelectionView: View {
             .fullScreenCover(item: $selectedUser) { user in
                 ContentView(
                     currentUser: user,
+                    storeManager: storeManager,
                     onLogout: {
                         selectedUser = nil
                     }
                 )
+            }
+            .alert("Upgrade to Pro", isPresented: $showingUpgradeAlert) {
+                Button("Upgrade - $4.99") {
+                    showingUpgradeSheet = true
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(storeManager.getProfileLimitMessage())
+            }
+            .sheet(isPresented: $showingUpgradeSheet) {
+                UpgradeView(storeManager: storeManager)
             }
             .alert("Delete User", isPresented: $showingDeleteAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -85,7 +106,13 @@ struct UserSelectionView: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            Button(action: { showingAddUser = true }) {
+            Button(action: {
+                if storeManager.canAddProfile(currentProfileCount: users.count) {
+                    showingAddUser = true
+                } else {
+                    showingUpgradeAlert = true
+                }
+            }) {
                 Label(NSLocalizedString("add_user", comment: "Add User"), systemImage: "person.badge.plus")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -107,6 +134,22 @@ struct UserSelectionView: View {
                     .foregroundColor(theme.primaryColor)
                     .padding(.top, 30)
                 
+                if storeManager.isPro {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.yellow)
+                        Text("Pro Version")
+                            .font(.headline)
+                            .foregroundColor(theme.primaryColor)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(theme.primaryColor.opacity(0.1))
+                    )
+                }
+                
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 20) {
                     ForEach(users) { user in
                         UserCard(user: user, theme: theme) {
@@ -123,16 +166,10 @@ struct UserSelectionView: View {
     }
     
     func deleteUser(_ user: User) {
-        // Remove user from list
         users.removeAll { $0.id == user.id }
-        
-        // Delete user's transactions from UserDefaults
         let transactionKey = "SavedTransactions_\(user.id.uuidString)"
         UserDefaults.standard.removeObject(forKey: transactionKey)
-        
-        // Save updated user list
         saveUsers()
-        
         print("✅ Deleted user: \(user.name) and their transactions")
     }
     
@@ -167,7 +204,6 @@ struct UserCard: View {
                 ZStack(alignment: .topTrailing) {
                     ProfileImageView(user: user, size: 80)
                     
-                    // Options button (three dots)
                     Button(action: {
                         showingOptions = true
                     }) {
@@ -246,7 +282,6 @@ struct AddUserView: View {
                     }
                     .listRowBackground(theme.cardBackground)
                     
-                    // Photo/Emoji Toggle
                     Section {
                         Picker("Profile Type", selection: $showPhotoOption) {
                             Text("Photo").tag(true)
@@ -257,7 +292,6 @@ struct AddUserView: View {
                     .listRowBackground(theme.cardBackground)
                     
                     if showPhotoOption {
-                        // Photo Picker Section
                         Section(NSLocalizedString("choose_photo", comment: "Choose Photo")) {
                             HStack {
                                 Spacer()
@@ -268,7 +302,6 @@ struct AddUserView: View {
                         }
                         .listRowBackground(theme.cardBackground)
                     } else {
-                        // Emoji Picker Section
                         Section(NSLocalizedString("choose_icon", comment: "Choose Icon")) {
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 15) {
                                 ForEach(emojis, id: \.self) { emoji in
@@ -317,7 +350,6 @@ struct AddUserView: View {
     }
     
     func saveUser() {
-        // Convert UIImage to Data
         let photoData = selectedImage?.jpegData(compressionQuality: 0.8)
         
         let newUser = User(

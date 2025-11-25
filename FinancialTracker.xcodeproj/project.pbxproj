@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		91D4E4F52EBFF9AE00EAC937 /* FinancialTracker.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 91D4E4F32EBFF9AE00EAC937 /* FinancialTracker.xcdatamodeld */; };
+		91FA58622ED554570080B6DD /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FA58612ED5544B0080B6DD /* StoreManager.swift */; };
+		91FA58662ED569470080B6DD /* UpgradeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FA58652ED5693E0080B6DD /* UpgradeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +35,8 @@
 		913E414F2EB682F90064F4B3 /* FinancialTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FinancialTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		913E41652EB686010064F4B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		91D4E4F42EBFF9AE00EAC937 /* FinancialTracker.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = FinancialTracker.xcdatamodel; sourceTree = "<group>"; };
+		91FA58612ED5544B0080B6DD /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
+		91FA58652ED5693E0080B6DD /* UpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -81,6 +85,8 @@
 		913E412F2EB682F70064F4B3 = {
 			isa = PBXGroup;
 			children = (
+				91FA58652ED5693E0080B6DD /* UpgradeView.swift */,
+				91FA58612ED5544B0080B6DD /* StoreManager.swift */,
 				91D4E4F32EBFF9AE00EAC937 /* FinancialTracker.xcdatamodeld */,
 				913E41652EB686010064F4B3 /* Info.plist */,
 				913E413A2EB682F80064F4B3 /* FinancialTracker */,
@@ -247,6 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91FA58662ED569470080B6DD /* UpgradeView.swift in Sources */,
+				91FA58622ED554570080B6DD /* StoreManager.swift in Sources */,
 				91D4E4F52EBFF9AE00EAC937 /* FinancialTracker.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

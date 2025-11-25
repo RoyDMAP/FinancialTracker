@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct FinancialTrackerApp: App {
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    @StateObject private var storeManager = StoreManager()
     
     init() {
         _ = ExternalDisplayManager.shared
@@ -19,7 +20,8 @@ struct FinancialTrackerApp: App {
         WindowGroup {
             UserSelectionView()
                 .preferredColorScheme(isDarkMode ? .dark : .light)
-                .environment(\.colorScheme, isDarkMode ? .dark : .light)  
+                .environment(\.colorScheme, isDarkMode ? .dark : .light)
+                .environmentObject(storeManager)
         }
     }
 }
