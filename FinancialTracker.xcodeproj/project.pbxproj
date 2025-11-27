@@ -55,6 +55,11 @@
 			path = FinancialTrackerUITests;
 			sourceTree = "<group>";
 		};
+		91677DC72ED7D9500045F712 /* FinancialTrackerUnitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FinancialTrackerUnitTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +98,7 @@
 				913E41482EB682F90064F4B3 /* FinancialTrackerTests */,
 				913E41522EB682F90064F4B3 /* FinancialTrackerUITests */,
 				913E41392EB682F80064F4B3 /* Products */,
+				91677DC72ED7D9500045F712 /* FinancialTrackerUnitTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -123,6 +129,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				913E413A2EB682F80064F4B3 /* FinancialTracker */,
+				91677DC72ED7D9500045F712 /* FinancialTrackerUnitTests */,
 			);
 			name = FinancialTracker;
 			packageProductDependencies = (

@@ -29,6 +29,7 @@ struct CulturalButtonRow: View {
                 .padding()
                 .background(Color.secondary.opacity(0.2))
                 .cornerRadius(12)
+                .accessibilityIdentifier("secondaryButton")  // ← ADDED
                 
                 Button(primaryTitle, role: primaryRole) {
                     primaryAction()
@@ -39,6 +40,7 @@ struct CulturalButtonRow: View {
                 .padding()
                 .background(primaryRole == .destructive ? Color.red : Color.blue)
                 .cornerRadius(12)
+                .accessibilityIdentifier("primaryButton")  // ← ADDED
             } else {
                 // LTR: Secondary button on LEFT, Primary on RIGHT
                 Button(secondaryTitle) {
@@ -50,6 +52,7 @@ struct CulturalButtonRow: View {
                 .padding()
                 .background(Color.secondary.opacity(0.2))
                 .cornerRadius(12)
+                .accessibilityIdentifier("secondaryButton")  // ← ADDED
                 
                 Button(primaryTitle, role: primaryRole) {
                     primaryAction()
@@ -60,6 +63,7 @@ struct CulturalButtonRow: View {
                 .padding()
                 .background(primaryRole == .destructive ? Color.red : Color.blue)
                 .cornerRadius(12)
+                .accessibilityIdentifier("primaryButton")  // ← ADDED
             }
         }
     }
