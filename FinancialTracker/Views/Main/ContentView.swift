@@ -372,7 +372,7 @@ struct TransactionRow: View {
                 Circle()
                     .fill(transaction.isIncome ? theme.incomeColor.opacity(0.2) : theme.expenseColor.opacity(0.2))
                     .frame(width: 44, height: 44)
-                Image(systemName: transaction.isIncome ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
+                Image(systemName: transaction.isIncome ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                     .foregroundColor(transaction.isIncome ? theme.incomeColor : theme.expenseColor)
             }
             VStack(alignment: .leading, spacing: 4) {

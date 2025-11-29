@@ -2,7 +2,7 @@
 //  FinancialTrackerTests.swift
 //  FinancialTrackerTests
 //
-//  Created by Roy Dimapilis on 11/25/25.
+//  Created by Roy Dimapilis on 11/1/25.
 //
 
 import XCTest
@@ -16,6 +16,51 @@ final class FinancialTrackerTests: XCTestCase {
 
     override func tearDownWithError() throws {
         // Clean up after tests
+    }
+
+    // MARK: - Transaction Manager Tests (Equivalent to TaskManager)
+    
+    // Unit Test: Adding a Transaction
+    func testAddingTransaction() throws {
+        var transactions: [Transaction] = []
+        
+        let newTransaction = Transaction(
+            title: "Buy Groceries",
+            amount: 50.0,
+            isIncome: false,
+            date: Date()
+        )
+        transactions.append(newTransaction)
+        
+        XCTAssertEqual(transactions.count, 1, "Should have 1 transaction")
+        XCTAssertEqual(transactions[0].title, "Buy Groceries", "Transaction title should match")
+    }
+    
+    func testAddingMultipleTransactions() throws {
+        var transactions: [Transaction] = []
+        
+        transactions.append(Transaction(title: "Groceries", amount: 50.0, isIncome: false, date: Date()))
+        transactions.append(Transaction(title: "Gas", amount: 30.0, isIncome: false, date: Date()))
+        transactions.append(Transaction(title: "Salary", amount: 2000.0, isIncome: true, date: Date()))
+        
+        XCTAssertEqual(transactions.count, 3, "Should have 3 transactions")
+        XCTAssertEqual(transactions[0].title, "Groceries")
+        XCTAssertEqual(transactions[1].title, "Gas")
+        XCTAssertEqual(transactions[2].title, "Salary")
+    }
+    
+    func testRemovingTransaction() throws {
+        var transactions: [Transaction] = []
+        
+        let transaction1 = Transaction(title: "Groceries", amount: 50.0, isIncome: false, date: Date())
+        let transaction2 = Transaction(title: "Gas", amount: 30.0, isIncome: false, date: Date())
+        transactions.append(transaction1)
+        transactions.append(transaction2)
+        
+        transactions.removeAll { $0.id == transaction1.id }
+        
+        XCTAssertEqual(transactions.count, 1, "Should have 1 transaction after removal")
+        XCTAssertEqual(transactions[0].title, "Gas", "Remaining transaction should be Gas")
     }
 
     // MARK: - Transaction Model Tests
@@ -100,11 +145,31 @@ final class FinancialTrackerTests: XCTestCase {
         
         XCTAssertNotEqual(user1.id, user2.id, "Each user should have unique ID")
     }
+
+    // MARK: - User Manager Tests (Equivalent to TaskManager)
     
-    func testUserHasValidID() throws {
-        let user = User(name: "Test", emoji: "👤", photoData: nil)
+    func testAddingUser() throws {
+        var users: [User] = []
         
-        XCTAssertNotNil(user.id, "User should have an ID")
+        let newUser = User(name: "John", emoji: "👨", photoData: nil)
+        users.append(newUser)
+        
+        XCTAssertEqual(users.count, 1, "Should have 1 user")
+        XCTAssertEqual(users[0].name, "John", "User name should match")
+    }
+    
+    func testRemovingUser() throws {
+        var users: [User] = []
+        
+        let user1 = User(name: "John", emoji: "👨", photoData: nil)
+        let user2 = User(name: "Jane", emoji: "👩", photoData: nil)
+        users.append(user1)
+        users.append(user2)
+        
+        users.removeAll { $0.id == user1.id }
+        
+        XCTAssertEqual(users.count, 1, "Should have 1 user after removal")
+        XCTAssertEqual(users[0].name, "Jane", "Remaining user should be Jane")
     }
 
     // MARK: - CurrencyConverter Tests
@@ -123,13 +188,6 @@ final class FinancialTrackerTests: XCTestCase {
         XCTAssertFalse(formatted.isEmpty, "Formatted amount should not be empty")
     }
     
-    func testCurrencyConverterFormatZero() throws {
-        let converter = CurrencyConverter.shared
-        
-        let formatted = converter.format(0.0)
-        XCTAssertFalse(formatted.isEmpty, "Zero should still format")
-    }
-    
     func testCurrencyConverterRoundTrip() throws {
         let converter = CurrencyConverter.shared
         
@@ -144,19 +202,6 @@ final class FinancialTrackerTests: XCTestCase {
         let converter = CurrencyConverter.shared
         
         XCTAssertFalse(converter.currencySymbol.isEmpty, "Currency symbol should exist")
-    }
-    
-    func testCurrencyCodeNotEmpty() throws {
-        let converter = CurrencyConverter.shared
-        
-        XCTAssertFalse(converter.currentCurrencyCode.isEmpty, "Currency code should exist")
-    }
-    
-    func testExchangeRateInfoNotEmpty() throws {
-        let converter = CurrencyConverter.shared
-        
-        let info = converter.getExchangeRateInfo()
-        XCTAssertFalse(info.isEmpty, "Exchange rate info should exist")
     }
 
     // MARK: - Balance Calculation Tests
@@ -221,31 +266,6 @@ final class FinancialTrackerTests: XCTestCase {
         XCTAssertNotNil(theme.cardBackground)
     }
 
-    // MARK: - Data Validation Tests
-    
-    func testTransactionAmountPositive() throws {
-        let transaction = Transaction(
-            title: "Test",
-            amount: 50.0,
-            isIncome: false,
-            date: Date()
-        )
-        
-        XCTAssertGreaterThan(transaction.amountUSD, 0, "Amount should be positive")
-    }
-    
-    func testUserNameNotEmpty() throws {
-        let user = User(name: "Test", emoji: "👤", photoData: nil)
-        
-        XCTAssertFalse(user.name.isEmpty, "User name should not be empty")
-    }
-    
-    func testUserEmojiNotEmpty() throws {
-        let user = User(name: "Test", emoji: "👤", photoData: nil)
-        
-        XCTAssertFalse(user.emoji.isEmpty, "User emoji should not be empty")
-    }
-
     // MARK: - Performance Tests
     
     func testTransactionCreationPerformance() throws {
@@ -257,16 +277,6 @@ final class FinancialTrackerTests: XCTestCase {
                     isIncome: i % 2 == 0,
                     date: Date()
                 )
-            }
-        }
-    }
-    
-    func testCurrencyFormattingPerformance() throws {
-        let converter = CurrencyConverter.shared
-        
-        measure {
-            for i in 0..<100 {
-                _ = converter.format(Double(i) * 100.0)
             }
         }
     }

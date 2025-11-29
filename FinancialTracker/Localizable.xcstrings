@@ -1908,19 +1908,19 @@
         }
       }
     },
-    "select_user" : {
+    "select user" : {
       "comment" : "Select User",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "اختيار مستخدم"
+            "value" : "اختر المستخدم"
           }
         },
-        "es-419" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seleccionar usuario"
+            "value" : "select user"
           }
         },
         "ja" : {

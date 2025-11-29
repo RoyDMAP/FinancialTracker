@@ -128,7 +128,7 @@ struct UserSelectionView: View {
     private func userListView(theme: AppTheme) -> some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text(NSLocalizedString("select_user", comment: "Select User"))
+                Text(NSLocalizedString("select user", comment: "Select User"))
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(theme.primaryColor)
