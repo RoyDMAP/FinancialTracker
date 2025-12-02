@@ -39,9 +39,24 @@
 		91FA58652ED5693E0080B6DD /* UpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9157AA112EDE8F0E0016BF87 /* Exceptions for "FinancialTracker" folder in "FinancialTrackerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Managers/CurrencyConverter.swift,
+				Managers/ExportManager.swift,
+				Models/Transaction.swift,
+			);
+			target = 913E41442EB682F90064F4B3 /* FinancialTrackerTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		913E413A2EB682F80064F4B3 /* FinancialTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9157AA112EDE8F0E0016BF87 /* Exceptions for "FinancialTracker" folder in "FinancialTrackerTests" target */,
+			);
 			path = FinancialTracker;
 			sourceTree = "<group>";
 		};
