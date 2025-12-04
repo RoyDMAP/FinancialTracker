@@ -27,7 +27,7 @@ final class ExportManagerTests: XCTestCase {
         // Test 2: CSV has correct headers
         XCTAssertTrue(csv.contains("Title,Amount,Type,Date"), "CSV should have correct headers")
         
-        // Test 3: CSV has newline after header
+        // Test 3: CSV after header
         let lines = csv.components(separatedBy: "\n")
         XCTAssertGreaterThan(lines.count, 0, "CSV should have at least header line")
         
