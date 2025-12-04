@@ -65,7 +65,7 @@ struct CulturalButtonRow: View {
     }
 }
 
-// Icon placement adapter for RTL
+// Icon placement 
 struct CulturalIconLabel: View {
     let icon: String
     let text: String
