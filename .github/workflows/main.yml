@@ -14,8 +14,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Select Xcode
-      run: sudo xcode-select -switch /Applications/Xcode_15.0.app
+    - name: List Xcode Schemes
+      run: xcodebuild -list -project "FinancialTracker/FinancialTracker.xcodeproj"
     
     - name: Build App
       run: xcodebuild build -scheme FinancialTracker -destination 'platform=iOS Simulator,name=iPad Pro (12.9-inch)'
