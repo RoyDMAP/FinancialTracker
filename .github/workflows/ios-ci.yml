@@ -1,0 +1,25 @@
+#
+//  ios-ci.yml
+//  FinancialTracker
+//
+//  Created by Roy Dimapilis on 12/3/25.
+//
+
+name: Financial Tracker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Build and Test
+      run: xcodebuild test -scheme FinancialTracker -destination 'platform=iOS Simulator,name=iPad Pro (12.9-inch)'

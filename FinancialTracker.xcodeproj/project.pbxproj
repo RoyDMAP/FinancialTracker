@@ -70,6 +70,11 @@
 			path = FinancialTrackerUITests;
 			sourceTree = "<group>";
 		};
+		91E57A062EE130E7005835F8 /* .github */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = .github;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +105,7 @@
 		913E412F2EB682F70064F4B3 = {
 			isa = PBXGroup;
 			children = (
+				91E57A062EE130E7005835F8 /* .github */,
 				91FA58652ED5693E0080B6DD /* UpgradeView.swift */,
 				91FA58612ED5544B0080B6DD /* StoreManager.swift */,
 				91D4E4F32EBFF9AE00EAC937 /* FinancialTracker.xcdatamodeld */,
@@ -138,6 +144,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				913E413A2EB682F80064F4B3 /* FinancialTracker */,
+				91E57A062EE130E7005835F8 /* .github */,
 			);
 			name = FinancialTracker;
 			packageProductDependencies = (
