@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ContentView: View {
     var currentUser: User?
-    @ObservedObject var storeManager: StoreManager  // ← ADD THIS
+    @ObservedObject var storeManager: StoreManager
     var onLogout: (() -> Void)?
     
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
@@ -20,10 +20,11 @@ struct ContentView: View {
     @State private var showingDrawingSheet = false
     @State private var showingOptionsSheet = false
     @State private var showingLocaleInfo = false
+    @State private var showingProfileView = false  // ← NEW
     @State private var selectedMonth: Date?
     @State private var showAllTransactions = true
-    @State private var showingUpgradeAlert = false  // ← ADD THIS
-    @State private var showingUpgradeSheet = false  // ← ADD THIS
+    @State private var showingUpgradeAlert = false
+    @State private var showingUpgradeSheet = false
     
     var availableMonths: [Date] {
         let calendar = Calendar.current
@@ -195,8 +196,7 @@ struct ContentView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { 
-                        // Check if user can add more transactions
+                    Button(action: {
                         if storeManager.canAddTransaction(currentTransactionCount: transactions.count) {
                             showingAddSheet = true
                         } else {
@@ -254,6 +254,9 @@ struct ContentView: View {
         .sheet(isPresented: $showingLocaleInfo) {
             LocaleInfoView()
         }
+        .sheet(isPresented: $showingProfileView) {  // ← NEW
+            ProfileView()
+        }
         .sheet(isPresented: $showingUpgradeSheet) {
             UpgradeView(storeManager: storeManager)
         }
@@ -284,6 +287,10 @@ struct ContentView: View {
                     }
                 }
                 .disabled(true)
+            }
+            
+            Button("My Profile") {  // ← NEW
+                showingProfileView = true
             }
             
             Button(NSLocalizedString("drawing_notes", comment: "Drawing Notes")) {
@@ -360,7 +367,6 @@ struct ContentView: View {
     }
 }
 
-// TransactionRow remains the same
 struct TransactionRow: View {
     let transaction: Transaction
     let theme: AppTheme
